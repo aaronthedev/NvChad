@@ -12,29 +12,14 @@ return {
     ---@module 'avante'
     ---@type avante.Config
     opts = {
-      -- add any opts here
-      -- this file can contain specific instructions for your project
-      instructions_file = "avante.md",
-      -- for example
-      provider = "claude",
-      providers = {
-        claude = {
-          endpoint = "https://api.anthropic.com",
-          model = "claude-sonnet-4-20250514",
-          timeout = 30000, -- Timeout in milliseconds
-          extra_request_body = {
-            temperature = 0.75,
-            max_tokens = 20480,
-          },
-        },
-        moonshot = {
-          endpoint = "https://api.moonshot.ai/v1",
-          model = "kimi-k2-0711-preview",
-          timeout = 30000, -- Timeout in milliseconds
-          extra_request_body = {
-            temperature = 0.75,
-            max_tokens = 32768,
-          },
+      provider = "deepseek",
+      vendors = {
+        deepseek = {
+          __inherited_from = "openai",
+          api_key_name = "DEEPSEEK_API_KEY",
+          endpoint = "https://api.deepseek.com",
+          model = "deepseek-coder",
+          max_tokens = 8192,
         },
       },
     },
@@ -116,73 +101,5 @@ return {
     opts = {
       -- configuration goes here
     },
-  },
-  {
-    "mbwilding/UnrealEngine.nvim",
-    lazy = false,
-    dependencies = {
-      -- optional, this registers the Unreal Engine icon to .uproject files
-      "nvim-tree/nvim-web-devicons",
-    },
-    keys = {
-      {
-        "<leader>ug",
-        function()
-          require("unrealengine.commands").generate_lsp()
-        end,
-        desc = "UnrealEngine: Generate LSP"
-      },
-      {
-        "<leader>ub",
-        function()
-          require("unrealengine.commands").build()
-        end,
-        desc = "UnrealEngine: Build"
-      },
-      {
-        "<leader>ur",
-        function()
-          require("unrealengine.commands").rebuild()
-        end,
-        desc = "UnrealEngine: Rebuild"
-      },
-      {
-        "<leader>uo",
-        function()
-          require("unrealengine.commands").open()
-        end,
-        desc = "UnrealEngine: Open Editor"
-      },
-      {
-        "<leader>uc",
-        function()
-          require("unrealengine.commands").clean()
-        end,
-        desc = "UnrealEngine: Clean"
-      },
-      {
-        "<leader>ue",
-        function()
-          require("unrealengine.commands").build_engine()
-        end,
-        desc = "UnrealEngine: Link Plugin - Build Engine"
-      },
-    },
-    -- Optional, this will update and build the Unreal Engine plugin on update
-    build = function()
-      -- Path required to be passed in
-      require("unrealengine.commands").build_engine({ engine_path = "/mnt/e/MYUE/TremEng" })
-    end,
-    opts = {
-      auto_generate = false,               -- Auto generates LSP info when detected in CWD | default: false
-      auto_build = false,                  -- Auto builds on save | default: false
-      engine_path = "/mnt/e/MYUE/TremEng", -- Path to your UnrealEngine source directory
-      build_type = "Development",          -- Build type: "DebugGame", "Development", or "Shipping"
-      with_editor = true,                  -- Build with editor | default: true
-      register_icon = true,                -- Register Unreal Engine icon for .uproject files | default: true
-      register_filetypes = true,           -- Register .uproject and .uplugin as JSON | default: true
-      close_on_success = true,             -- Close terminal split on successful builds | default: true
-      environment_variables = nil,         -- Environment variables to pass when launching editor (Linux/Mac only)
-    }
   }
 }
