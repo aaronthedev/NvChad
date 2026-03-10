@@ -30,4 +30,10 @@ M.general = {
   },
 }
 
+M.terminal = {
+  t = {
+    ["<Esc>"] = { [[<C-\><C-n>]], "Exit terminal mode" },
+  },
+}
+
 return M

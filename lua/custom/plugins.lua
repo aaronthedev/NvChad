@@ -81,7 +81,7 @@ return {
     lazy = false, -- 🔑 FORCE LOAD
     version = "*",
     opts = {
-      open_mapping = [[<c-\>]],
+      open_mapping = [[<c-t>]],
       direction = "horizontal",
       size = 15,
     },
