@@ -7,7 +7,7 @@ vim.lsp.config["ts_ls"] = {
   },
 }
 
-local servers = { "html", "cssls", "ts_ls", "eslint" }
+local servers = { "html", "cssls", "ts_ls", "eslint", "clangd" }
 vim.lsp.enable(servers)
 
 -- read :h vim.lsp.config for changing options of lsp servers 

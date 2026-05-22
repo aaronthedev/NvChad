@@ -12,11 +12,11 @@ return {
       },
       {
         "taku25/UEP.nvim",
-        opts = { engine_path = "/TremEn" },
+        opts = { engine_path = "/home/aaron/TremEn" },
       },
       {
         "taku25/UBT.nvim",
-        opts = { engine_path = "/TremEn" },
+        opts = { engine_path = "/home/aaron/TremEn" },
       },
       "taku25/UCM.nvim",
       "taku25/USH.nvim",
