@@ -1,0 +1,279 @@
+---
+# ==============================================================================
+#  NvChad / Neovim Bootstrap Playbook
+# ==============================================================================
+#  Supports:  Debian/Ubuntu (apt), Fedora/RHEL (dnf), Arch (pacman)
+#
+#  Usage (Linux):
+#    pip install ansible
+#    ansible-galaxy install -r requirements.yml
+#    ansible-playbook -i localhost, -K install.yml
+#
+#  Windows:
+#    Ansible cannot run natively on Windows as a control node.
+#    Use install.sh (bash + Chocolatey) instead — works in Git Bash.
+#    Windows tasks below are commented out as reference for WSL+WinRM setups.
+# ==============================================================================
+
+- name: Bootstrap Linux dev environment
+  hosts: linux
+  become: yes
+  vars:
+    font_name: JetBrainsMono
+    font_url: "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/{{ font_name }}.zip"
+    font_dir: "{{ ansible_env.HOME | default('/home/' + ansible_user_id) }}/.local/share/fonts"
+    cargo_env: "{{ ansible_env.HOME | default('/home/' + ansible_user_id) }}/.cargo/env"
+
+  pre_tasks:
+    - name: Gather OS family
+      ansible.builtin.setup:
+        gather_subset: distribution
+
+  tasks:
+    # ── System packages ──────────────────────────────────────────────────
+    - name: Install system packages
+      ansible.builtin.apt:
+        name:
+          - neovim
+          - git
+          - build-essential
+          - ripgrep
+          - unzip
+          - curl
+          - ca-certificates
+          - nodejs
+          - npm
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install system packages (Red Hat / Fedora)
+      ansible.builtin.dnf:
+        name:
+          - neovim
+          - git
+          - gcc
+          - gcc-c++
+          - make
+          - ripgrep
+          - unzip
+          - curl
+          - ca-certificates
+          - nodejs
+          - npm
+        state: present
+      when: ansible_os_family in ["RedHat", "Suse"]
+
+    - name: Install system packages (Arch Linux)
+      community.general.pacman:
+        name:
+          - neovim
+          - git
+          - base-devel
+          - ripgrep
+          - unzip
+          - curl
+          - ca-certificates-utils
+          - nodejs
+          - npm
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Archlinux"
+
+    # ── Rust toolchain ──────────────────────────────────────────────────
+    - name: Check if rustup is installed
+      ansible.builtin.command: rustup --version
+      register: rustup_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install rustup (Linux)
+      ansible.builtin.shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+      args:
+        creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
+      when: rustup_check.rc != 0
+
+    - name: Source cargo env for this session
+      ansible.builtin.shell: |
+        set -a
+        . "{{ cargo_env }}"
+        echo "PATH=$PATH"
+      args:
+        executable: /bin/bash
+      register: cargo_path
+      changed_when: false
+      when: rustup_check.rc != 0
+
+    - name: Install rust-analyzer component
+      ansible.builtin.shell: |
+        . "{{ cargo_env }}"
+        rustup component add rust-analyzer
+      args:
+        executable: /bin/bash
+      register: ra_install
+      changed_when: "'installed' in ra_install.stdout or 'installed' in ra_install.stderr"
+      failed_when: ra_install.rc != 0 and 'already installed' not in ra_install.stderr
+
+    # ── stylua ───────────────────────────────────────────────────────────
+    - name: Check if stylua is installed
+      ansible.builtin.command: "{{ ansible_env.HOME }}/.cargo/bin/stylua --version"
+      register: stylua_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install stylua via cargo
+      ansible.builtin.shell: |
+        . "{{ cargo_env }}"
+        cargo install stylua
+      args:
+        executable: /bin/bash
+      register: stylua_install
+      changed_when: "'Installed' in stylua_install.stdout"
+      when: stylua_check.rc != 0
+
+    # ── Node.js prettier ─────────────────────────────────────────────────
+    - name: Check if prettier is installed
+      ansible.builtin.command: prettier --version
+      register: prettier_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install prettier globally
+      ansible.builtin.npm:
+        name: prettier
+        global: yes
+        state: present
+      when: prettier_check.rc != 0
+
+    # ── Nerd Font ────────────────────────────────────────────────────────
+    - name: Check if Nerd Font is already installed (fc-list)
+      ansible.builtin.command: fc-list
+      register: fc_list
+      changed_when: false
+      failed_when: false
+
+    - name: Ensure font directory exists
+      ansible.builtin.file:
+        path: "{{ font_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download and install Nerd Font
+      block:
+        - name: Download font zip
+          ansible.builtin.get_url:
+            url: "{{ font_url }}"
+            dest: "/tmp/{{ font_name }}.zip"
+            mode: "0644"
+
+        - name: Extract font to user fonts directory
+          ansible.builtin.unarchive:
+            src: "/tmp/{{ font_name }}.zip"
+            dest: "{{ font_dir }}"
+            remote_src: yes
+            extra_opts: [-q, -o]
+
+        - name: Refresh font cache
+          ansible.builtin.command: fc-cache -f
+          changed_when: true
+      when: "not ansible_check_mode and (font_name + '.*Nerd' not in fc_list.stdout)"
+
+    - name: Clean up font zip
+      ansible.builtin.file:
+        path: "/tmp/{{ font_name }}.zip"
+        state: absent
+
+  post_tasks:
+    - name: Summary
+      ansible.builtin.debug:
+        msg:
+          - "Nerd Font installed to: {{ font_dir }}"
+          - "Set your terminal font to '{{ font_name }} Nerd Font' or 'JetBrainsMono Nerd Font'."
+          - "Run 'nvim' — Lazy.nvim will install all plugins on first launch."
+
+# =============================================================================
+#  Windows — run from WSL targeting Windows via SSH
+#   1. Enable OpenSSH Server on Windows (Settings → Apps → Optional Features)
+#   2. Add your SSH key:  cat ~/.ssh/id_rsa.pub >> /mnt/c/Users/$USER/.ssh/authorized_keys
+#   3. ansible-playbook -i hosts.ini install.yml
+# =============================================================================
+
+- name: Bootstrap Windows dev environment
+  hosts: windows
+  vars:
+    font_name: JetBrainsMono
+    cargo_dir: "{{ ansible_env.USERPROFILE | default('C:\\Users\\' + ansible_user) }}\\.cargo"
+
+  tasks:
+    # ── Chocolatey bootstrap ─────────────────────────────────────────────
+    - name: Check if Chocolatey is installed
+      ansible.windows.win_command: choco --version
+      register: choco_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install Chocolatey
+      ansible.windows.win_shell: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+      when: choco_check.rc != 0
+
+    # ── System packages ──────────────────────────────────────────────────
+    - name: Install system packages (Chocolatey)
+      chocolatey.chocolatey.win_chocolatey:
+        name:
+          - neovim
+          - git
+          - ripgrep
+          - unzip
+          - curl
+          - nodejs
+          - mingw
+          - nerd-fonts-{{ font_name }}
+        state: present
+
+    # ── Rust toolchain ───────────────────────────────────────────────────
+    - name: Check if rustup is installed
+      ansible.windows.win_command: "{{ cargo_dir }}\\bin\\rustup.exe --version"
+      register: rustup_check
+      failed_when: false
+      changed_when: false
+
+    - name: Download and install rustup
+      ansible.windows.win_shell: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri https://win.rustup.rs -OutFile "$env:TEMP\rustup-init.exe"
+        & "$env:TEMP\rustup-init.exe" -y --default-toolchain stable
+      when: rustup_check.rc != 0
+
+    - name: Install rust-analyzer
+      ansible.windows.win_shell: |
+        & "{{ cargo_dir }}\bin\rustup.exe" component add rust-analyzer
+      register: ra_install
+      changed_when: "'installed' in ra_install.stdout"
+      failed_when: ra_install.rc != 0 and 'already installed' not in ra_install.stderr
+
+    # ── stylua ───────────────────────────────────────────────────────────
+    - name: Install stylua via cargo
+      ansible.windows.win_shell: |
+        & "{{ cargo_dir }}\bin\cargo.exe" install stylua
+      register: stylua_install
+      changed_when: "'Installed' in stylua_install.stdout"
+
+    # ── Node.js prettier ─────────────────────────────────────────────────
+    - name: Install prettier globally
+      ansible.windows.win_shell: |
+        npm install -g prettier
+      register: prettier_install
+      changed_when: "'added' in prettier_install.stdout or 'added' in prettier_install.stderr"
+
+  post_tasks:
+    - name: Summary
+      ansible.builtin.debug:
+        msg:
+          - "Chocolatey packages installed (neovim, git, ripgrep, mingw, nodejs, Nerd Font)."
+          - "Set your terminal font to 'JetBrainsMono Nerd Font' or 'JetBrainsMono NF'."
+          - "Run 'nvim' — Lazy.nvim will install all plugins on first launch."
