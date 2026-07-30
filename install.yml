@@ -200,15 +200,15 @@
 #   3. ansible-playbook -i hosts.ini install.yml
 #
 #   Also if need JetBrainsMono font for Windows: 
-#     nvim "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+#    nvim "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 #       "profiles": {
-          "defaults": {
-              "font": {
-                  "face": "JetBrainsMono NFM",
-                  "size": 12
-              }
-          }
-      }
+#          "defaults": {
+#              "font": {
+#                  "face": "JetBrainsMono NFM",
+#                  "size": 12
+#              }
+#          }
+#      }
 # =============================================================================
 
 - name: Bootstrap Windows dev environment
@@ -282,6 +282,14 @@
         & "{{ cargo_dir }}\bin\cargo.exe" install stylua --locked
       register: stylua_install
       changed_when: "'Installed' in stylua_install.stdout"
+
+    # — tree-sitter-cli ----------------------------------------------------------
+
+    - name: Install tree-sitter-cli via cargo
+      ansible.windows.win_shell: |
+        & "{{ cargo_dir }}\bin\cargo.exe" install tree-sitter-cli --locked
+      register: tree_sitter_install
+      changed_when: "'Installed' in tree_sitter_install.stdout"
 
     # ── Node.js prettier ─────────────────────────────────────────────────
     - name: Install prettier globally
