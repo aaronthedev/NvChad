@@ -12,11 +12,11 @@ return {
       },
       {
         "taku25/UEP.nvim",
-        opts = { engine_path = "/home/aaron/UnrealEngine" },
+        opts = { engine_path = "/E:/UE_4.27/" },
       },
       {
         "taku25/UBT.nvim",
-        opts = { engine_path = "/home/aaron/UnrealEngine" },
+        opts = { engine_path = "/E:/UE_4.27/" },
       },
       "taku25/UCM.nvim",
       "taku25/USH.nvim",
@@ -61,6 +61,27 @@ return {
           },
         },
         config = function(_, opts)
+
+          ---------------------------------------------------------------------------
+          -- Neovim 0.11 compatibility shim for tree-sitter-manager.nvim
+          ---------------------------------------------------------------------------
+
+          vim.list = vim.list or {}
+
+          vim.list.unique = vim.list.unique or function(items)
+            local result = {}
+            local seen = {}
+
+            for _, item in ipairs(items) do
+              if not seen[item] then
+                seen[item] = true
+                result[#result + 1] = item
+              end
+            end
+
+            return result
+          end
+
           vim.filetype.add({
             extension = {
               verse = "verse",
