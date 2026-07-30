@@ -240,6 +240,7 @@
           - neovim
           - git
           - ripgrep
+          - fd
           - unzip
           - curl
           - nodejs
