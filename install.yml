@@ -198,6 +198,17 @@
 #   1. Enable OpenSSH Server on Windows (Settings → Apps → Optional Features)
 #   2. Add your SSH key:  cat ~/.ssh/id_rsa.pub >> /mnt/c/Users/$USER/.ssh/authorized_keys
 #   3. ansible-playbook -i hosts.ini install.yml
+#
+#   Also if need JetBrainsMono font for Windows: 
+#     nvim "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+#       "profiles": {
+          "defaults": {
+              "font": {
+                  "face": "JetBrainsMono NFM",
+                  "size": 12
+              }
+          }
+      }
 # =============================================================================
 
 - name: Bootstrap Windows dev environment
