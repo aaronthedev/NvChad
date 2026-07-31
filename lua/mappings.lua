@@ -20,3 +20,9 @@ map("n", "gd", function()
   end
 end, { desc = "UE Go to Definition" })
 
+--map("n", "<leader>fg", "<cmd>Telescope live_grep<CR>", { desc = "Find in Files" })
+--map("n", "<leader>ff", "<cmd>Telescope find_files<CR>", { desc = "Find Files" })
+
+map("n", "<leader>ca", vim.lsp.buf.code_action, {
+  desc = "Code Actions"
+})
