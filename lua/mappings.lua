@@ -26,3 +26,7 @@ end, { desc = "UE Go to Definition" })
 map("n", "<leader>ca", vim.lsp.buf.code_action, {
   desc = "Code Actions"
 })
+
+map("n", "<leader>os", "<cmd>UDEV switch<CR>", {
+  desc = "Switch Header/Source",
+})
