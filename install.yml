@@ -48,39 +48,6 @@
         cache_valid_time: 3600
       when: ansible_os_family == "Debian"
 
-    - name: Install system packages (Red Hat / Fedora)
-      ansible.builtin.dnf:
-        name:
-          - neovim
-          - git
-          - gcc
-          - gcc-c++
-          - make
-          - ripgrep
-          - unzip
-          - curl
-          - ca-certificates
-          - nodejs
-          - npm
-        state: present
-      when: ansible_os_family in ["RedHat", "Suse"]
-
-    - name: Install system packages (Arch Linux)
-      community.general.pacman:
-        name:
-          - neovim
-          - git
-          - base-devel
-          - ripgrep
-          - unzip
-          - curl
-          - ca-certificates-utils
-          - nodejs
-          - npm
-        state: present
-        update_cache: yes
-      when: ansible_os_family == "Archlinux"
-
     # ── Rust toolchain ──────────────────────────────────────────────────
     - name: Check if rustup is installed
       ansible.builtin.command: rustup --version
@@ -298,26 +265,6 @@
         npm install -g prettier
       register: prettier_install
       changed_when: "'added' in prettier_install.stdout or 'added' in prettier_install.stderr"
-
-    - name: Clear existing nvim config and data
-      ansible.windows.win_shell: |
-        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\nvim"
-        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\nvim-data"
-      changed_when: true
-  
-    - name: Sync nvim config from git
-      ansible.windows.win_shell: |
-        $nvimDir = "$env:LOCALAPPDATA\nvim"
-        if (Test-Path "$nvimDir\.git") {
-          cd "$nvimDir"
-          git fetch origin
-          git checkout main
-          git pull 
-        } else {
-          git clone -b main https://github.com/aaronthedev/NvChad.git "$nvimDir"
-        }
-      register: clone_result
-      changed_when: "'Already up to date' not in clone_result.stdout and 'already up to date' not in clone_result.stderr"
 
   post_tasks:
     - name: Summary

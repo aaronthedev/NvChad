@@ -7,20 +7,22 @@ vim.lsp.config["ts_ls"] = {
   },
 }
 
-local clangd = "C:/Program Files/LLVM/bin/clangd.exe"
+--local clangd = "C:/Program Files/LLVM/bin/clangd.exe"
+local clangd = vim.env.clangd
 
-if not vim.uv.fs_stat(clangd) then
-  vim.notify("clangd not found: " .. clangd, vim.log.levels.ERROR)
-  return
+if value then
+  vim.notify("clangd env var = " .. value, vim.log.levels.INFO)
+
+  vim.lsp.config["clangd"] = {
+    cmd = {
+      clangd,
+      "--background-index",
+      "--clang-tidy",
+    },
+  }
+else
+  vim.notify("clangd env var is not set", vim.log.levels.WARN)
 end
-
-vim.lsp.config["clangd"] = {
-  cmd = {
-    clangd,
-    "--background-index",
-    "--clang-tidy",
-  },
-}
 
 local servers = {
   "html",
