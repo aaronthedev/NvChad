@@ -13,6 +13,10 @@
 #    Ansible cannot run natively on Windows as a control node.
 #    Use install.sh (bash + Chocolatey) instead — works in Git Bash.
 #    Windows tasks below are commented out as reference for WSL+WinRM setups.
+#  
+#  Linux local:
+#   ansible-playbook -i localAnsible.ini install.yml -K
+#
 # ==============================================================================
 
 - name: Bootstrap Linux dev environment
