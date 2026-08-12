@@ -10,8 +10,8 @@ vim.lsp.config["ts_ls"] = {
 --local clangd = "C:/Program Files/LLVM/bin/clangd.exe"
 local clangd = vim.env.clangd
 
-if value then
-  vim.notify("clangd env var = " .. value, vim.log.levels.INFO)
+if clangd then
+  vim.notify("clangd env var = " .. clangd, vim.log.levels.INFO)
 
   vim.lsp.config["clangd"] = {
     cmd = {
