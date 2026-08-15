@@ -30,3 +30,15 @@ map("n", "<leader>ca", vim.lsp.buf.code_action, {
 map("n", "<leader>os", "<cmd>UDEV switch<CR>", {
   desc = "Switch Header/Source",
 })
+
+-- Doesnt work with Unreal
+map("n", "<leader>cd", function()
+  vim.lsp.buf.code_action({
+    apply = true,
+    filter = function(action)
+      return action.title == "Create function body out-of-line"
+    end,
+  })
+end, {
+  desc = "Create Function Definition"
+})
