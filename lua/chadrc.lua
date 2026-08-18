@@ -1,42 +1,42 @@
--- This file needs to have same structure as nvconfig.lua 
+-- This file needs to have same structure as nvconfig.lua
 -- https://github.com/NvChad/ui/blob/v3.0/lua/nvconfig.lua
--- Please read that file to know all available options :( 
+-- Please read that file to know all available options :(
 
 ---@type ChadrcConfig
 local M = {}
 
 M.base46 = {
-	theme = "onedark",
+  theme = "onedark",
 
-	-- hl_override = {
-	-- 	Comment = { italic = true },
-	-- 	["@comment"] = { italic = true },
-	-- },
-	hl_override = {
+  -- hl_override = {
+  -- 	Comment = { italic = true },
+  -- 	["@comment"] = { italic = true },
+  -- },
+  hl_override = {
 		Normal = { bg = "#000000", fg = "#909090" },
 		NormalNC = { bg = "#000000", fg = "#909090" },
 
 		-- Floating windows
-		NormalFloat = { bg = "#000000" },
-		FloatBorder = { bg = "#000000" },
+		NormalFloat = { bg = "#000000", fg = "#909090" },
+		FloatBorder = { bg = "#000000", fg = "#909090" },
 
 		-- Sign / number columns
-		SignColumn = { bg = "#000000" },
-		LineNr = { bg = "#000000" },
-		CursorLineNr = { bg = "#000000" },
+		SignColumn = { bg = "#000000", fg = "#909090" },
+		LineNr = { bg = "#000000", fg = "#909090" },
+		CursorLineNr = { bg = "#000000", fg = "#909090" },
 
 		-- Cursor line
-		CursorLine = { bg = "#080808" },
+		CursorLine = { bg = "#080808", fg = "#909090" },
 
 		-- End-of-buffer "~"
-		EndOfBuffer = { bg = "#000000" },
+		EndOfBuffer = { bg = "#000000", fg = "#909090" },
 
 		-- NvimTree
-		NvimTreeNormal = { bg = "#000000" },
-		NvimTreeNormalNC = { bg = "#000000" },
-		NvimTreeEndOfBuffer = { bg = "#000000" },
-		NvimTreeWinSeparator = { bg = "#000000" }
-	}
+		NvimTreeNormal = { bg = "#000000", fg = "#909090" },
+		NvimTreeNormalNC = { bg = "#000000", fg = "#909090" },
+		NvimTreeEndOfBuffer = { bg = "#000000", fg = "#909090" },
+		NvimTreeWinSeparator = { bg = "#000000", fg = "#909090" },
+  },
 }
 
 -- M.nvdash = { load_on_startup = true }
